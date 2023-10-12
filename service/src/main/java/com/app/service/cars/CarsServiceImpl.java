@@ -1,22 +1,27 @@
 package com.app.service.cars;
 
-import com.app.persistence.model.car.Color;
 import com.app.persistence.model.car.Car;
+import com.app.persistence.model.car.Color;
 import com.app.persistence.model.component.Component;
 import com.app.service.cars.exception.CarsServiceException;
 import com.app.service.cars.provider.CarsProvider;
-import com.app.service.cars_statistics.*;
+import com.app.service.cars_statistics.BigDecimalStatistics;
+import com.app.service.cars_statistics.NumbersStatisticsType;
 import com.app.service.cars_statistics.collector.BigDecimalSummaryStatistics;
 import com.app.service.sort.AbstractSortServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.app.persistence.data.reader.loader.Fetch.*;
-import static com.app.persistence.model.car.CarComparator.*;
+import static com.app.persistence.data.reader.loader.Fetch.EAGER;
+import static com.app.persistence.data.reader.loader.Fetch.LAZY;
+import static com.app.persistence.model.car.CarComparator.byModel;
 import static com.app.persistence.model.car.CarMapper.*;
 import static java.util.Collections.reverseOrder;
 import static java.util.Map.Entry.comparingByKey;

@@ -1,7 +1,7 @@
 package com.app.service.cars;
 
-import com.app.persistence.model.car.Color;
 import com.app.persistence.model.car.Car;
+import com.app.persistence.model.car.Color;
 import com.app.persistence.model.component.Component;
 import com.app.service.cars_statistics.BigDecimalStatistics;
 import com.app.service.cars_statistics.NumbersStatisticsType;
