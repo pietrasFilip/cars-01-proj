@@ -1,4 +1,4 @@
-# cars-02-project
+# cars-01-project
 
 This multimodule project helps to manage cars. Cars contain information about model, price, price, color, mileage,
 and components. You can simply add orders from .json, .txt files as well as from MySql database.
