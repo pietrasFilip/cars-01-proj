@@ -43,9 +43,6 @@ services:
 
   cars_01_web_app:
     image: pietrasfilip/cars-01-app:1.0
-    build:
-      context: .
-      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     restart: always
