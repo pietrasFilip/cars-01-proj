@@ -14,7 +14,7 @@ import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -28,14 +28,19 @@ public class TokensServiceImpl implements TokensService{
     private final AuthorizationDtoValidator authorizationDtoValidator;
     private final RefreshTokenDtoValidator refreshTokenDtoValidator;
     private final TokensDtoValidator tokensDtoValidator;
-    private final Environment environment;
     private static final Logger logger = LogManager.getRootLogger();
+    @Value("${ACCESS_TOKEN_EXPIRATION_TIME_MS}")
+    private String accessTokenExpirationTimeMs;
+    @Value("${REFRESH_TOKEN_EXPIRATION_TIME_MS}")
+    private String refreshTokenExpirationTimeMs;
+    @Value("${ACCESS_TOKEN_EXPIRATION_TIME_PROPERTY_IN_REFRESH}")
+    private String accessTokenExpirationTimePropertyInRefresh;
 
     @Override
     public TokensDto generateTokens(Long userId) {
         var currentDate = Date.from(ZonedDateTime.now().toInstant());
         var refreshTokenExpirationDate = Date.from(currentDate.toInstant()
-                .plusMillis(Long.parseLong(environment.getRequiredProperty("REFRESH_TOKEN_EXPIRATION_TIME_MS"))));
+                .plusMillis(Long.parseLong(refreshTokenExpirationTimeMs)));
 
         return accessAndRefreshToken(userId, refreshTokenExpirationDate);
     }
@@ -44,7 +49,7 @@ public class TokensServiceImpl implements TokensService{
     public AuthorizationDto parseTokens(String token) {
         if (token == null) {
             logger.error("Parse tokens - token is null");
-            throw new TokenServiceException("Token error");
+            throw new TokenServiceException("Access Denied!");
         }
 
         if (isTokenNotValid(token)) {
@@ -74,8 +79,8 @@ public class TokensServiceImpl implements TokensService{
             throw new TokenServiceException("Token error");
         }
 
-        var accessTokenExpirationTimeMs = accessTokenExpirationDateMsInRefreshToken(token);
-        if (accessTokenExpirationTimeMs < System.currentTimeMillis()) {
+        var accessTokenExpirationTimeMsRefresh = accessTokenExpirationDateMsInRefreshToken(token);
+        if (accessTokenExpirationTimeMsRefresh < System.currentTimeMillis()) {
             logger.error("Access token has been expired");
             throw new TokenServiceException("Token error");
         }
@@ -93,7 +98,7 @@ public class TokensServiceImpl implements TokensService{
     private TokensDto accessAndRefreshToken(Long userId, Date refreshTokenExpirationDate) {
         var currentDate = Date.from(ZonedDateTime.now().toInstant());
         var accessTokenExpirationDate = Date.from(currentDate.toInstant()
-                .plusMillis(Long.parseLong(environment.getRequiredProperty("ACCESS_TOKEN_EXPIRATION_TIME_MS"))));
+                .plusMillis(Long.parseLong(accessTokenExpirationTimeMs)));
 
         var accessToken = Jwts
                 .builder()
@@ -108,7 +113,7 @@ public class TokensServiceImpl implements TokensService{
                 .setSubject(String.valueOf(userId))
                 .setExpiration(refreshTokenExpirationDate)
                 .setIssuedAt(currentDate)
-                .claim(environment.getRequiredProperty("ACCESS_TOKEN_EXPIRATION_TIME_PROPERTY_IN_REFRESH"),
+                .claim(accessTokenExpirationTimePropertyInRefresh,
                         accessTokenExpirationDate.getTime())
                 .signWith(secretKey)
                 .compact();
@@ -141,7 +146,7 @@ public class TokensServiceImpl implements TokensService{
     }
 
     private Long accessTokenExpirationDateMsInRefreshToken(String token) {
-        return claims(token).get(environment.getRequiredProperty("ACCESS_TOKEN_EXPIRATION_TIME_PROPERTY_IN_REFRESH"),
+        return claims(token).get(accessTokenExpirationTimePropertyInRefresh,
                 Long.class);
     }
 }
